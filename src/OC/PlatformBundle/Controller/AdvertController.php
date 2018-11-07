@@ -48,9 +48,6 @@ class AdvertController extends Controller
       throw new NotFoundHttpException('Page "'.$page.'" inexistante.');
     }
 
-    // Ici, on récupérera la liste des annonces, puis on la passera au template
-
-    // Et modifiez le 2nd argument pour injecter notre liste
     return $this->render('OCPlatformBundle:Advert:index.html.twig', array(
       'listAdverts' => $listAdverts
     ));
@@ -90,19 +87,22 @@ class AdvertController extends Controller
 
   public function addAction(Request $request)
   {
-    // La gestion d'un formulaire est particulière, mais l'idée est la suivante :
+    // On récupère le service
+    $antispam = $this->container->get('oc_platform.antispam');
 
-    // Si la requête est en POST, c'est que le visiteur a soumis le formulaire
+    // Je pars du principe que $text contient le texte d'un message quelconque
+    $text = '...';
+    if ($antispam->isSpam($text)) {
+      throw new \Exception('Votre message a été détecté comme spam !');
+    }
+
     if ($request->isMethod('POST')) {
-      // Ici, on s'occupera de la création et de la gestion du formulaire
 
       $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
 
-      // Puis on redirige vers la page de visualisation de cettte annonce
       return $this->redirectToRoute('oc_platform_view', array('id' => 5));
     }
 
-    // Si on n'est pas en POST, alors on affiche le formulaire
     return $this->render('OCPlatformBundle:Advert:add.html.twig');
   }
 
